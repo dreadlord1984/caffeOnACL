@@ -1,9 +1,7 @@
-![OPEN AI LAB](https://oaid.github.io/pics/openailab.png)
-
-# 1. Release Notes
+# 1. User Quick Guide
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](LICENSE)
 
-Please refer to [CaffeOnACL Release NOTE](https://github.com/OAID/caffeOnACL/blob/master/acl_openailab/Reversion.md) for details
+This Installation will help you get started to setup CaffeOnACL on RK3399 quickly.
 
 # 2. Preparation
 ## 2.1 General dependencies installation
@@ -19,50 +17,52 @@ Please refer to [CaffeOnACL Release NOTE](https://github.com/OAID/caffeOnACL/blo
 	pip install --upgrade pip
 
 ## 2.2 Download source code
-Recommend creating a new directory in your work directory to execute the following steps. For example, you can create a direcotry named "oaid" in your home directory by the following commands.<br>
 
 	cd ~
-	mkdir oaid
-	cd oaid
 
-#### Download "ACL" (arm_compute : v17.05):
+#### Download "ACL" (arm_compute :[v17.10](https://github.com/ARM-software/ComputeLibrary/tree/bf8b01dfbfdca124673ade33c5eac8f3748d7abd)):
 	git clone https://github.com/ARM-software/ComputeLibrary.git
+	git checkout bf8b01d
 #### Download "CaffeOnACL" :
-	git clone https://github.com/OAID/caffeOnACL.git
+	git clone https://github.com/OAID/CaffeOnACL.git
 #### Download "Googletest" :
 	git clone https://github.com/google/googletest.git
 
 # 3. Build CaffeOnACL
 ## 3.1 Build ACL :
-	cd ~/oaid/ComputeLibrary
+	cd ~/ComputeLibrary
+    aarch64-linux-gnu-gcc opencl-1.2-stubs/opencl_stubs.c -Iinclude -shared -o build/libOpenCL.so
 	scons Werror=1 -j8 debug=0 asserts=1 neon=1 opencl=1 embed_kernels=1 os=linux arch=arm64-v8a
 
 ## 3.2 Build Caffe :
-	export ACL_ROOT=~/oaid/ComputeLibrary
-	cd ~/oaid/caffeOnACL
-	cp acl_openailab/Makefile.config.acl Makefile.config
+	export ACL_ROOT=~/ComputeLibrary
+	cd ~/CaffeOnACL
+	cp Makefile.config.acl Makefile.config
 	make all distribute
 
 ## 3.3 Build Unit tests
 ##### Build the gtest libraries
-	cd ~/oaid/googletest
+	cd ~/googletest
 	cmake CMakeLists.txt
 	make
 	sudo make install
 
 ##### Build Caffe Unit tests
-	export CAFFE_ROOT=~/oaid/caffeOnACL
-	cd ~/oaid/caffeOnACL/unit_tests
+	export CAFFE_ROOT=~/CaffeOnACL
+	cd ~/CaffeOnACL/unit_tests
 	make clean
 	make
 
-## 3.3 Run tests
-If the output message of the following two tests is same as the examples, it means the porting is success.
+## 3.4 To Configure The Libraries
 
-	export LD_LIBRARY_PATH=~/oaid/caffeOnACL/distribute/lib:~/oaid/ComputeLibrary/build
+	sudo cp ~/ComputeLibrary/build/libarm_compute.so /usr/lib 
+	sudo cp ~/ComputeLibrary/build/libarm_compute_core.so /usr/lib 
+	sudo cp ~/CaffeOnACL/distribute/lib/libcaffe.so  /usr/lib
 
-#### Reference Caffenet
-	cd  ~/oaid/caffeOnACL/data/ilsvrc12
+# 4. Run tests
+
+#### 4.1 Run Caffenet
+	cd  ~/CaffeOnACL/data/ilsvrc12
 	sudo chmod +x get_ilsvrc_aux.sh
 	./get_ilsvrc_aux.sh
 	cd ../..
@@ -76,8 +76,8 @@ If the output message of the following two tests is same as the examples, it mea
 	  0.1132 - "n02119022 red fox, Vulpes vulpes"
 	  0.0421 - "n02085620 Chihuahua"
 
-#### Unit test
-	  cd ~/oaid/caffeOnACL/unit_tests
+#### 4.2 Run Unit test
+	  cd ~/CaffeOnACL/unit_tests
 	  ./test_caffe_main
 	  output message:
 	    [==========] 29 tests from 6 test cases ran. (1236 ms total) [ PASSED ] 29 tests.
